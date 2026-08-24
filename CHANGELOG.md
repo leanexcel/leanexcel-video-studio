@@ -1,0 +1,1 @@
+Added Stage A OpenAI adapter and stage_a driver script to call the compact review prompt and produce JSON output.
