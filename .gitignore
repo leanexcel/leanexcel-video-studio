@@ -1,0 +1,16 @@
+# Ignore artifacts and virtual environments
+artifacts/
+.env
+__pycache__/
+*.pyc
+*.log
+.vscode/
+.node_modules/
+
+# Large media
+*.mp4
+*.mov
+*.mkv
+
+# Camtasia project files (keep if you want)
+*.camproj
