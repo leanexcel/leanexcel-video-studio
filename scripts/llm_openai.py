@@ -1,21 +1,39 @@
+"""OpenAI adapter used by the video pipeline.
+
+Requires the modern OpenAI Python SDK (>=1.0).
+The API key is read from OPENAI_API_KEY; it is never stored in the repo.
+"""
 import os
-import openai
 
-OPENAI_API_KEY = os.getenv('OPENAI_API_KEY') or os.getenv('OPENAI_API_KEY')
-if not OPENAI_API_KEY:
-    raise RuntimeError('OpenAI API key not found in OPENAI_API_KEY environment variable')
-openai.api_key = OPENAI_API_KEY
+from openai import OpenAI
 
 
-def chat_completion(messages, model='gpt-4', temperature=0.2, max_tokens=1500):
+DEFAULT_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+
+
+def chat_completion(messages, model=None, temperature=0.2, max_tokens=1500):
     """Call OpenAI Chat Completions and return the assistant text.
 
-    messages: list of dicts {role: 'system'|'user'|'assistant', 'content': str}
+    ``messages`` is a list of dictionaries with ``role`` and ``content``.
     """
-    resp = openai.ChatCompletion.create(
-        model=model,
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        raise RuntimeError(
+            "OpenAI API key not found. Set the OPENAI_API_KEY environment variable."
+        )
+
+    client = OpenAI(api_key=api_key)
+    response = client.chat.completions.create(
+        model=model or DEFAULT_MODEL,
         messages=messages,
         temperature=temperature,
         max_tokens=max_tokens,
     )
-    return resp.choices[0].message.content
+
+    if not response.choices or not response.choices[0].message:
+        raise RuntimeError("OpenAI returned an empty completion.")
+
+    content = response.choices[0].message.content
+    if content is None:
+        raise RuntimeError("OpenAI returned no message content.")
+    return content
